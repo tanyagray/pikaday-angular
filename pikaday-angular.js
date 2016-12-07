@@ -34,10 +34,12 @@
     return {
 
       restrict: 'A',
+      require: '?ngModel',
+      priority: 1,
       scope: {
         pikaday: '=', onSelect: '&', onOpen: '&', onClose: '&', onDraw: '&', disableDayFn: '&'
       },
-      link: function (scope, elem, attrs) {
+      link: function (scope, elem, attrs, ngModel) {
 
         // Init config Object
 
@@ -83,6 +85,19 @@
             // Functions
 
             case "onSelect":
+
+              config[attr] = function (date) {
+                  setTimeout(function(){
+                      if( ngModel) {
+                          console.log('++ pikaday publish', date);
+                          ngModel.$setViewValue(date);
+                      }
+                      scope.$apply();
+                  });
+                  return scope[attr]({ pikaday: this, date: date });
+              };
+              break;
+
             case "onOpen":
             case "onClose":
             case "onDraw":
@@ -132,6 +147,7 @@
           }
         }
 
+
         // instantiate pikaday with config, bind to scope, add destroy event callback
 
         var picker = new Pikaday(config);
@@ -139,6 +155,40 @@
         scope.$on('$destroy', function () {
           picker.destroy();
         });
+
+        // If an ng-model has been attached we need some
+        // additional support for updating the values
+
+        if( ngModel ){
+
+          // hijack the onchange function, applying the change
+          // to the model before calling the user-defined function
+          /*var userOnSelectFn = config['onSelect'];
+
+          config['onSelect'] = function(date) {
+            setTimeout(function(){
+              console.log('++ hijack function ');
+              console.log(date);
+
+              ngModel.$setViewValue(date);
+              scope.$apply();
+
+              if( (typeof userOnSelectFn) === 'function' ) {
+                callbackFn(date);
+              }
+            });
+          }*/
+
+          // when the bound model updates externally,
+          // reflect that change in the picker
+          ngModel.$render = function() {
+            console.log('++ model changed, update view');
+            picker.setDate( ngModel.$viewValue);
+          }
+
+
+        }
+
       }
     };
   }
