@@ -89,7 +89,6 @@
               config[attr] = function (date) {
                   setTimeout(function(){
                       if( ngModel) {
-                          console.log('++ pikaday publish', date);
                           ngModel.$setViewValue(date);
                       }
                       scope.$apply();
@@ -161,28 +160,9 @@
 
         if( ngModel ){
 
-          // hijack the onchange function, applying the change
-          // to the model before calling the user-defined function
-          /*var userOnSelectFn = config['onSelect'];
-
-          config['onSelect'] = function(date) {
-            setTimeout(function(){
-              console.log('++ hijack function ');
-              console.log(date);
-
-              ngModel.$setViewValue(date);
-              scope.$apply();
-
-              if( (typeof userOnSelectFn) === 'function' ) {
-                callbackFn(date);
-              }
-            });
-          }*/
-
           // when the bound model updates externally,
           // reflect that change in the picker
           ngModel.$render = function() {
-            console.log('++ model changed, update view');
             picker.setDate( ngModel.$viewValue);
           }
 
